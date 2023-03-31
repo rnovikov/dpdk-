@@ -6,12 +6,17 @@ APP = libdpdk++.a
 
 
 SRCS-y := dpdk_cover/cdpdk.cpp
-SRCS-y += dpdk_cover/cdpdk.cpp
-SRCS-y += dpdk_cover/cdpdk.cpp
+SRCS-y += dpdk_cover/cmbuf.cpp
+SRCS-y += dpdk_cover/cmempool.cpp
 
 SRCS-y += tools/cpcapreader.cpp
 SRCS-y += tools/cpcapwriter.cpp
+SRCS-y += tools/json_tools.cpp
+SRCS-y += tools/string_tools.cpp
 
+SRCS-y += logger/logger_api.cpp
+
+SRCS-y += config/ealparameters.cpp
 
 
 
@@ -19,7 +24,8 @@ PROJECT_DIR= .
 ERROR_FLAGS = -Werror -Wno-error=unused-result
 
 CXX?=g++-11
-CFLAGS+= -std=c++20 
+CFLAGS+= -O0 -ggdb 
+CFLAGS+= -std=c++17 
 
 ifdef LOG_LEVEL
 CFLAGS+= -DLOG_LEVEL=$(LOG_LEVEL)
@@ -34,7 +40,7 @@ ifdef ENABLE_PACKET_FLOW
 CFLAGS+= -DENABLE_PACKET_FLOW 
 endif
 CFLAGS+= -I${PROJECT_DIR}
-CFLAGS+= -DPRINT_BUILD_FLAGS='"$(BUILD_FLAGS)"'
+#CFLAGS+= -DPRINT_BUILD_FLAGS='"$(BUILD_FLAGS)"'
 
 ifeq ($(VPP_BURST_SIZE),)
 $(error "Please define VPP_BURST_SIZE environment variable from 1 to 64")
@@ -61,7 +67,7 @@ CFLAGS += -DALLOW_EXPERIMENTAL_API
 
 NLOHMANN_INCLUDE?= -I$(PROJECT_DIR)/../third_party/json/include/
 CFLAGS+=$(NLOHMANN_INCLUDE)
- 
+CFLAGS+=$(ERROR_FLAGS) 
 
 
 
@@ -87,7 +93,7 @@ build/$(APP): $(OBJS)
         
 
 build:
-	@mkdir -p $@ $@/dpdk_cover/ $@/tools/ $@/preprocessor_tools 
+	@mkdir -p $@ $@/dpdk_cover/ $@/tools/ $@/preprocessor_tools $@/config/ $@/logger/ 
 
 .PHONY: clean
 clean:

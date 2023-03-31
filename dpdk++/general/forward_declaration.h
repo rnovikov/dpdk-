@@ -3,6 +3,7 @@
 
 class cMbuf;
 class cMemPool;
+class iRealPort;
 
 
 #endif // FORWARD_DECLARATION_H
