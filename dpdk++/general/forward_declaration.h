@@ -4,6 +4,7 @@
 class cMbuf;
 class cMemPool;
 class iRealPort;
+class iMirrorPoint;
 
 
 #endif // FORWARD_DECLARATION_H

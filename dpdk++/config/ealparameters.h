@@ -3,29 +3,16 @@
 
 #include <nlohmann/json.hpp>
 #include <general/base_types.h>
-enum class ePhysPortConfigType
-{
-	BAD_VAL=0,
-	DPDK,
-	PROCESS,
-	TASK
-};
+
+namespace config {
+
+
 //enum class ePhysPortConfigOwner
 //{
 
 //};
 
-struct sJsonRealPortConfig
-{
-	std::string pci_;
-	ePhysPortConfigType type_;
-//	ePhysPortConfigOwner owner_;
-	std::string driver_;
-	std::string name_;
-	void loadFromJson(const nlohmann::json& json);
-	static ePhysPortConfigType portTypeFromString(const std::string & val);
 
-};
 
 struct sJsonProcess {
 	bool isPrimary_;
@@ -45,7 +32,7 @@ public:
 	sJsonProcess getProcess()const;
 	std::vector<int> getLcores() const;
 	std::vector<int> getMemory() const;
-	std::vector<sJsonRealPortConfig> getPorts() const;
+	std::vector<sRealPortParam> getPorts() const;
 	int getChannels() const;
 	int getRank() const;
 
@@ -54,17 +41,19 @@ public:
 	std::string getLcoresMap()const;
 
 private:
+	ePhysPortConfigType portTypeFromString(const std::string & val);
+	sRealPortParam loadFromJson(const nlohmann::json& json);
 	// Struct representing the "process" field
 	void loadPortsConfig(const std::vector<nlohmann::json> & vls );
 	sJsonProcess process_;
 
 	std::vector<int> lcores_;
 	std::vector<int> memory_;
-	std::vector<sJsonRealPortConfig> ports_;
+	std::vector<sRealPortParam> ports_;
 	int channels_;
 	int rank_;
 };
 
-
+}
 
 #endif // EALPARAMETERS_H

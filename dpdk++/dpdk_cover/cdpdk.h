@@ -21,7 +21,7 @@ public:
 	static void init(const std::string & data, const std::string &zeroArg);
 	static cDpdk * getInstance();
 	std::string toStr()const;
-	std::vector < iRealPort *> getRealPorts();
+	std::vector < iRealPort *> getRealPorts()const;
 
 	void initPorts(f_port_create_fabric f_fabric=iRealPort::port_fabric_default);
 	void startAllPorts();
@@ -35,7 +35,7 @@ private:
 	std::vector <iRealPort *> portsArray_;
 	std::string zeroArg_;
 
-	sEalParameters params_;
+	config::sEalParameters params_;
 };
 
 #endif // CDPDK_H

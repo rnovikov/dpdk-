@@ -1,16 +1,28 @@
 #ifndef IREALPORT_H
 #define IREALPORT_H
 #include <string>
-#include <port_types.h>
+#include <real_ports/port_types.h>
+#include <tools/ctableview.h>
 
 
 
+
+// rte_eth
+struct sPortStat
+{
+
+
+	void exportToRow(tools::cTableRow& row);
+};
+class iMirrorPoint;
 
 class iRealPort
 {
 public:
-
-	virtual void init(uint16_t rxQueues,uint16_t txQueues)=0;
+	iRealPort(uint32_t portId,const std::string & name);
+	virtual ~iRealPort();
+	virtual void init()=0;
+	virtual void initQueues(uint16_t rxQueues,uint16_t txQueues)=0;
 	virtual bool setLinkState( bool isOn ) = 0;
 	virtual bool setPromiscMode( bool isOn ) = 0;
 
@@ -24,15 +36,24 @@ public:
 	uint16_t getRxQueuesCount() const;
 	uint16_t getTxQueuesCount() const;
 
-	bool setRxMirrorPoint( iMirrorPoint* point, uint32_t queueId );
-	bool setTxMirrorPoint( iMirrorPoint* point, uint32_t queueId );
-
-	virtual uint32_t portId()const =0;
-	virtual uint32_t dpdkPortId()const =0;
 
 
+	inline uint32_t portId()const {return portId_;}
 
-	static iRealPort * port_fabric_default(const sInitRealPortParam & port);
+	virtual bool setRxMirrorPoint( iMirrorPoint* point, uint32_t queueId )=0;
+	virtual bool setTxMirrorPoint( iMirrorPoint* point, uint32_t queueId )=0;
+	static iRealPort * port_fabric_default(uint32_t id,const sRealPortParam & port);
+
+
+	void exportToRow(tools::cTableRow & row,const std::vector<std::string> & headers);
+
+
+	std::string name()const{return name_;}
+private:
+	uint32_t portId_=BAD_UINT32_VALUE;
+	std::string name_;
+
+
 
 };
 

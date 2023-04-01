@@ -16,9 +16,8 @@ int main(int argc,char ** argv)
     cout<<"HELLO WORLD"<<endl;
 	cDpdk::init(config,argv[0]);
 
+	cDpdk::getInstance()->initPorts();
     cout<<"ZERO ARG:"<<argv[0]<<endl;
-
 	cout<<cDpdk::getInstance()->toStr()<<endl;
-
     return 0;
 }

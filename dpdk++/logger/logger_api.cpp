@@ -1,6 +1,6 @@
 #include "logger_api.h"
 #include <iostream>
-#include <preprocessor_tools/error.h>
+#include <general/error_handler.h>
 using namespace std;
 namespace logger
 {

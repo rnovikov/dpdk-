@@ -6,7 +6,7 @@
 class iCoreThread
 {
 public:
-	iCoreThread(uint32_t  coreIndex);
+	iCoreThread(uint32_t coreIndex);
 	void stop();
 	volatile bool isInit()const;
 	void run();

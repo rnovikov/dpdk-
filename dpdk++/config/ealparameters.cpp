@@ -1,7 +1,11 @@
 #include "ealparameters.h"
-#include <preprocessor_tools/error.h>
+#include <general/error_handler.h>
 #define FAKE_PCI_ADDR "ffff:ff:ff.0"
 using namespace std;
+
+namespace config {
+
+
 sEalParameters::sEalParameters()
 {
 
@@ -33,7 +37,7 @@ std::vector<int> sEalParameters::getMemory() const {
 	return memory_;
 }
 
-std::vector<sJsonRealPortConfig> sEalParameters::getPorts() const
+std::vector<sRealPortParam> sEalParameters::getPorts() const
 {
 	return ports_;
 }
@@ -79,13 +83,13 @@ vector<string> sEalParameters::args() const
 
 	uint32_t pciPortsCount = 0;
 
-	for(const sJsonRealPortConfig &prt :ports_)
+	for(const sRealPortParam &prt :ports_)
 	{
 		if(prt.type_==ePhysPortConfigType::DPDK)
 		{
 			pciPortsCount++;
 			answer.push_back("-a");
-			answer.push_back("0000:"+prt.pci_);
+			answer.push_back(prt.pci_);
 		}
 	}
 
@@ -116,7 +120,7 @@ string sEalParameters::getLcoresMap() const
 	return ss.str();
 }
 
-ePhysPortConfigType sJsonRealPortConfig::portTypeFromString(const std::string &val)
+ePhysPortConfigType sEalParameters::portTypeFromString(const std::string &val)
 {
 	if(val=="DPDK")
 	{
@@ -140,35 +144,39 @@ void sEalParameters::loadPortsConfig(const std::vector<nlohmann::json> &vls)
 	TA_LOGIC_ERROR(vls.size());
 	for(const nlohmann::json & item:vls)
 	{
-		sJsonRealPortConfig cfg;
-		cfg.loadFromJson(item);
+		sRealPortParam cfg=loadFromJson(item);
 		ports_.push_back(cfg);
 	}
 
 }
-
-void sJsonRealPortConfig::loadFromJson(const nlohmann::json &item)
+sRealPortParam sEalParameters::loadFromJson(const nlohmann::json& json)
 {
-	name_=item.at("name").get<string>();
-	string type=item.at("type").get<string>();
-	type_=portTypeFromString(type);
-	switch (type_) {
+	sRealPortParam config;
+	config.name_=json.at("name").get<string>();
+	string type=json.at("type").get<string>();
+	config.type_=portTypeFromString(type);
+	switch (config.type_) {
 	case ePhysPortConfigType::DPDK:
-		pci_=item.at("pci").get<string>();
-		driver_=item.at("driver").get<string>();
+		config.pci_=json.at("pci").get<string>();
+
 
 		break;
 	default:
 		TA_LOGIC_ERROR(0);
 		break;
 	}
-
-
+	return config;
 }
+
+
 
 void sJsonProcess::load(const nlohmann::json &json)
 {
 	isPrimary_=json.at("isPrimary").get<bool>();
 	name_=json.at("name").get<string>();
 	prefix_=json.at("prefix").get<string>();
+}
+
+
+
 }

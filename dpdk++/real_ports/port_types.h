@@ -6,14 +6,11 @@
 #include <general/base_types.h>
 #include <general/forward_declaration.h>
 
-struct sInitRealPortParam
-{
-	std::string  driverName_;
-	uint32_t portId_=BAD_UINT16_VALUE;
-	uint32_t dpdkPortId_=BAD_UINT16_VALUE;
-};
 
-typedef iRealPort * ( *f_port_create_fabric )( const sInitRealPortParam & params  );
+
+
+
+typedef iRealPort * ( *f_port_create_fabric )(uint32_t id, const sRealPortParam & params  );
 
 typedef uint16_t ( *f_dpdk_real_port_burst )( void* rxq, struct rte_mbuf** rx_pkts, uint16_t nb_pkts );
 
@@ -48,11 +45,6 @@ struct sMirrorPortData
 	void clear();
 };
 
-
-struct sRealPortConfig
-{
-
-};
 
 
 #endif // PORT_TYPES_H

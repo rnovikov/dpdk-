@@ -52,5 +52,5 @@ private:
 	std::string name_;
 };
 
-
+}
 #endif // CTABLEVIEW_H

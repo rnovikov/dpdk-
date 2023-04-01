@@ -13,10 +13,17 @@ SRCS-y += tools/cpcapreader.cpp
 SRCS-y += tools/cpcapwriter.cpp
 SRCS-y += tools/json_tools.cpp
 SRCS-y += tools/string_tools.cpp
+SRCS-y += tools/dpdk_tools.cpp
+SRCS-y += tools/tools.cpp
 
 SRCS-y += logger/logger_api.cpp
 
 SRCS-y += config/ealparameters.cpp
+
+SRCS-y += real_ports/cdpdkport.cpp
+SRCS-y += real_ports/crealport.cpp
+SRCS-y += real_ports/irealport.cpp
+SRCS-y += real_ports/port_types.cpp
 
 
 
@@ -93,7 +100,7 @@ build/$(APP): $(OBJS)
         
 
 build:
-	@mkdir -p $@ $@/dpdk_cover/ $@/tools/ $@/preprocessor_tools $@/config/ $@/logger/ 
+	@mkdir -p $@ $@/dpdk_cover/ $@/tools/ $@/preprocessor_tools $@/config/ $@/logger/ $@/real_ports 
 
 .PHONY: clean
 clean:

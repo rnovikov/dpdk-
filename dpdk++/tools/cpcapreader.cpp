@@ -2,9 +2,9 @@
 #include <general/forward_declaration.h>
 #include <pcap.h>
 #include <filesystem>
-#include <logger/logger_handler.h>
+#include <logger/logger_api.h>
 #include <general/base_defines.h>
-#include <preprocessor_tools/error.h>
+#include <general/error_handler.h>
 
 using namespace std;
 namespace tools
@@ -12,7 +12,7 @@ namespace tools
 
 void cPcapReader::init(const std::string &pcapFile, cMemPool *mempool, uint32_t maxPacketsToRead)
 {
-    TA_BAD_POINTER( mempool);
+	TA_BAD_POINTER( mempool);
     if( filesystem::exists( pcapFile ) )
     {
         pcapFile_ = pcapFile;
