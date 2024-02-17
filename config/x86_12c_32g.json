@@ -1,0 +1,9 @@
+{
+"workers":10,
+"pools":
+[ 
+{"name":"default","objSize":2400,"objCount":50000,"perCoreCache":64}
+  ]
+
+
+}
