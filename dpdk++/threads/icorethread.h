@@ -1,20 +1,31 @@
 #ifndef ICORETHREAD_H
 #define ICORETHREAD_H
 #include <base/base_types.h>
-
+class cThreadManager;
 class iCoreThread
 {
 public:
     iCoreThread();
 
-    virtual ~iCoreWorker()
-    {
-    }
+    virtual ~iCoreThread() {   }
     virtual void initOnCore() = 0;
-
-    DC_ALWAYS_INLINE
     virtual std::string getResultJson() const = 0;
     virtual std::string name() const = 0;
+
+    DC_ALWAYS_INLINE uint64_t iteration()
+    {
+        uint64_t answer=doIteration();
+        return answer;
+    }
+
+    virtual std::string toStr()const;
+protected:
+    friend class cThreadManager;
+    virtual uint64_t doIteration() = 0;
+
+    void setManagerParams(uint32_t lcoreId){ lcoreId_ = lcoreId;}
+public:
+
 
     void loop();
     void stop();
@@ -29,7 +40,7 @@ public:
 
 protected  :
     virtual void onDone() {  }
-    virtual uint64_t doIteration() = 0;
+
 
 
 private:

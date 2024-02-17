@@ -107,6 +107,22 @@ cDpdk::~cDpdk()
     //    rte_exit(0,"DONE");
 }
 
+rte_mempool *cDpdk::getPoolByName(const string &name)
+{
+    rte_mempool * answer=nullptr;
+    if(pools_.find(name)==pools_.end())
+    {
+
+    }
+    else
+    {
+        answer=pools_[name];
+    }
+
+    return answer;
+
+}
+
 
 uint32_t cDpdk::cores() const
 {

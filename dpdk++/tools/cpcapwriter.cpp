@@ -6,7 +6,8 @@
 #define USEC_IN_SEC 1000000
 
 static unsigned char temp_data_private[MAX_PCAP_PACKET_SIZE]{ 0 };
-
+namespace dc_tools
+{
 cPcapWriter::cPcapWriter()
 {
 }
@@ -52,4 +53,5 @@ bool cPcapWriter::add( cMbuf* mbuf, uint64_t timestamp )
 void cPcapWriter::flush()
 {
     pcap_dump_flush( (pcap_dumper_t*)dumper_ );
+}
 }

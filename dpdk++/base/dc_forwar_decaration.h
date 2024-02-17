@@ -5,6 +5,7 @@
 class iReceiver;
 class iSender;
 class  cMbuf;
+class cDpdk;
 
 
 

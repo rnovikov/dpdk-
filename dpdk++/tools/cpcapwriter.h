@@ -1,6 +1,8 @@
 #ifndef CPCAPWRITER_H
 #define CPCAPWRITER_H
 #include <base/base_types.h>
+namespace  dc_tools
+{
 
 class cPcapWriter
 {
@@ -17,5 +19,5 @@ private:
     void* dumper_ = nullptr;
     void* pcapId_ = nullptr;
 };
-
+}
 #endif // CPCAPWRITER_H

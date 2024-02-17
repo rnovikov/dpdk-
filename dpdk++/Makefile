@@ -2,12 +2,20 @@
 # binary name
 LIB_NAME = libdpdk++.a
 
+# git variables
+APP_GIT_BRANCH      := $(shell git rev-parse --abbrev-ref HEAD)
+APP_GIT_COMMIT_HASH := $(shell git rev-parse HEAD)
+
 PKGCONF = pkg-config
 LDFLAGS_STATIC= -lpcap
 # all source are stored in SRCS-y
 
 
 SRCS-y := base/base_types.cpp
+
+
+
+SRCS-y += performance/performance_counters.cpp
 
 SRCS-y += base/base_enums.cpp
 SRCS-y += base/cfivetuplekey.cpp
@@ -34,7 +42,12 @@ SRCS-y += tools/tools.cpp
 SRCS-y += tools/ctableview.cpp
 
 
+SRCS-y += threads/cthreadmanager.cpp
+SRCS-y += threads/icorethread.cpp
 SRCS-y += threads/ithread.cpp
+
+
+
 
 
 
@@ -91,7 +104,7 @@ build/$(LIB_NAME): $(OBJS)
        
 
 build:
-	@mkdir -p $@ $@/dpdk_cover/ $@/connections $@/tools/ $@/base  $@/logger/ $@/ports  $@/packet  $@/threads
+	@mkdir -p $@ $@/dpdk_cover/ $@/connections $@/tools/ $@/performance  $@/base  $@/logger/ $@/ports  $@/packet  $@/threads $@/tests    
 
 .PHONY: clean
 clean:

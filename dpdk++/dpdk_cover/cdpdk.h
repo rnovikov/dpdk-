@@ -4,7 +4,7 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include <base/base_types.h>
-
+#define DC_DEF_POOL_NAME "default"
 struct rte_mempool;
 struct rte_ring;
 
@@ -18,7 +18,8 @@ public:
     uint32_t getDpdkPortsCount();
     ~cDpdk();
     void runLcores();
-    rte_mempool* getDefaultPool(){NOT_IMPLEMENTED; return nullptr;}
+    rte_mempool* getDefaultPool(){ return getPoolByName(DC_DEF_POOL_NAME);}
+    rte_mempool * getPoolByName(const std::string & name);
 
     uint32_t cores() const;
 

@@ -12,7 +12,6 @@ nlohmann::json readFromFile( const std::string& filePath, const std::string& mod
 {
     TA_LOGIC_ERROR( filesystem::exists( filePath ) );
     std::string data = readFileDataWithComment( filePath );
-    L_DEBUG << data;
     nlohmann::json js = nlohmann::json::parse( data );
     if( module.size() )
     {
