@@ -8,7 +8,7 @@ namespace dc_tools
 {
 
 uint32_t ipFromStr( const std::string& ip );
-std::string strIpAddr( uint32_t ip, bool swapEndian = false );
+
 VecStr splitToVector( std::string str, const std::string& delimiter );
 std::string vecToString( VecStr s, const std::string& delemiter );
 

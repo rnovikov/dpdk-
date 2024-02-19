@@ -13,17 +13,16 @@
 struct sMetaData
 {
 
+    uint16_t ipPlSize_;
     uint16_t ipv4Offset_;
     uint16_t l4Offset_;
     uint16_t l5Offset_;
     uint16_t payloadOffset_;
+    uint16_t payloadSize_;
     uint8_t l4Proto_;
     uint8_t l5Proto_;
     uint32_t tcpSeq_;
     uint32_t tcpRcv_;
-
-    uint8_t blockMakerId_ = BAD_UINT8_VALUE;
-    uint16_t testPurpRxWindow_ = 0;
     uint16_t etherType_ = 0;
 
     bool isMcast_;
@@ -32,7 +31,8 @@ struct sMetaData
     {
 
         etherType_ = 0;
-        blockMakerId_ = BAD_UINT8_VALUE;
+        payloadSize_=BAD_UINT16_VALUE;
+        payloadOffset_=0;
         ipv4Offset_ = 0;
         l4Offset_ = 0;
         l4Proto_ = 0;
@@ -40,8 +40,9 @@ struct sMetaData
         l5Proto_ = 0;
         tcpSeq_ = 0;
         tcpRcv_ = 0;
+        ipPlSize_=0;
         isMcast_ = false;
-        testPurpRxWindow_ = 0;
+
     }
 };
 
@@ -73,29 +74,20 @@ public:
         TA_LOGIC_ERROR( meta_.payloadOffset_ );
         return getDataByOffset<uint8_t>( meta_.payloadOffset_ );
     }
-    void setBlockMakerId( uint8_t id )
-    {
-        meta_.blockMakerId_ = id;
-    }
 
-    DC_ALWAYS_INLINE bool parseNetwork( uint32_t storageSize );
 
-    DC_ALWAYS_INLINE bool parseL3();
+
+
+    DC_ALWAYS_INLINE bool  parseL3();
     DC_ALWAYS_INLINE void parseL4();
 
     DC_ALWAYS_INLINE void parseTcp();
     DC_ALWAYS_INLINE void parseUdp();
-    void parseRtp();
-    //    ALWAYS_INLINE bool parseSt();
-    DC_ALWAYS_INLINE bool parseAsSt2110_20();
 
 
     template <uint32_t cachelines> DC_ALWAYS_INLINE void prefetchData();
 
-    uint8_t getBlockMakerId() const
-    {
-        return meta_.blockMakerId_;
-    }
+
     rte_mbuf* getMbuf()
     {
         return (rte_mbuf*)this;
@@ -239,6 +231,9 @@ inline bool cMbuf::parseL3()
         key_.proto_ = ipv4->next_proto_id;
         meta.l4Offset_ = currentOffset;
         meta.l4Proto_ = ipv4->next_proto_id;
+        meta.ipPlSize_=rte_bswap16(ipv4->total_length)-DC_IP_HEADER_LEN(ipv4);
+
+
         return true;
     }
     else
@@ -276,7 +271,13 @@ inline void cMbuf::parseTcp( )
     key_.srcL4Port_ = tcp->src_port;
     meta_.tcpRcv_ = rte_bswap32( tcp->recv_ack );
     meta_.tcpSeq_ = rte_bswap32( tcp->sent_seq );
+
     meta_.payloadOffset_ = currentOffset;
+    meta_.payloadSize_=data_len - currentOffset;
+    uint32_t tcpHdrSize=DC_TCP_HEADER_LEN( tcp );
+
+//    TA_LOGIC_ERROR(meta_.payloadOffset_+meta_.payloadSize_== meta_.ipv4Offset_+meta_.ipPlSize_ );
+
 
 }
 

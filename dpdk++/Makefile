@@ -15,7 +15,7 @@ SRCS-y := base/base_types.cpp
 
 
 
-SRCS-y += performance/performance_counters.cpp
+#SRCS-y += performance/performance_counters.cpp
 
 SRCS-y += base/base_enums.cpp
 SRCS-y += base/cfivetuplekey.cpp
