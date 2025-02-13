@@ -1,6 +1,7 @@
 #ifndef PERFORMANCE_COUNTERS_H
 #define PERFORMANCE_COUNTERS_H
 #include <base/debug_tools.h>
+
 namespace dc_perf {
 
 #include <iomanip>
@@ -56,6 +57,77 @@ DC_ALWAYS_INLINE void sPerfCounterItem::addMultiple( uint64_t packets, uint64_t 
     cycles_ += cyc;
     ops_ += packets;
 }
+
+template <uint32_t sizeOfStruct> struct sBurstCounter
+{
+    sBurstCounter()
+    {
+        clear();
+    }
+
+    void clear();
+    bool isEmpty() const;
+    sPerfCounterItem simplify() const;
+    void ALWAYS_INLINE add( uint64_t packets, uint64_t cycles );
+    constexpr uint32_t size() const
+    {
+        return array_.size();
+    }
+    std::string toStr( const std::string& name ) const;
+
+    void operator+=( const sBurstCounter<sizeOfStruct>& item );
+    void operator-=( const sBurstCounter<sizeOfStruct>& item );
+
+private:
+    std::array<sPerfCounterItem, sizeOfStruct + 1> array_;
+};
+
+template <uint32_t sizeOfStruct> void sBurstCounter<sizeOfStruct>::add( uint64_t packets, uint64_t cycles )
+{
+    THROW_ASSERT( packets <= sizeOfStruct, "BAD USAGE" );
+    array_[packets].addSingle( cycles );
+}
+
+template <uint32_t sizeOfStruct>
+ALWAYS_INLINE void sBurstCounter<sizeOfStruct>::operator+=( const sBurstCounter<sizeOfStruct>& item )
+{
+    for( uint i = 0; i < array_.size(); ++i )
+    {
+        array_[i] += item.array_[i];
+    }
+}
+
+template <uint32_t sizeOfStruct>
+ALWAYS_INLINE void sBurstCounter<sizeOfStruct>::operator-=( const sBurstCounter<sizeOfStruct>& item )
+{
+    for( uint i = 0; i < array_.size(); ++i )
+    {
+        array_[i] -= item.array_[i];
+    }
+}
+
+template <uint32_t sizeOfStruct> inline sPerfCounterItem sBurstCounter<sizeOfStruct>::simplify() const
+{
+    sPerfCounterItem answer;
+
+    for( uint i = 1; i < size(); ++i )
+    {
+        if( array_[i].ops_ )
+        {
+            answer.addMultiple( array_[i].ops_ * i, array_[i].cycles_ );
+        }
+    }
+
+    return answer;
+}
+
+template <uint32_t sizeOfStruct> inline std::string sBurstCounter<sizeOfStruct>::toStr( const std::string& name ) const
+{
+    std::stringstream ss;
+    NOT_IMPLEMENTED;
+    return ss.str();
+}
+
 
 }
 
