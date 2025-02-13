@@ -128,6 +128,204 @@ template <uint32_t sizeOfStruct> inline std::string sBurstCounter<sizeOfStruct>:
     return ss.str();
 }
 
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange> class cLoopStatCounter
+{
+public:
+    ALWAYS_INLINE cLoopStatCounter();
+    ALWAYS_INLINE void operator+=( const cLoopStatCounter<sizeOfStruct, minPowValue, valRange>& l );
+    ALWAYS_INLINE void operator-=( const cLoopStatCounter<sizeOfStruct, minPowValue, valRange>& l );
+    ALWAYS_INLINE void nextSnap( uint32_t sz, uint64_t time );
+    ALWAYS_INLINE void singleSnap( uint64_t time );
+
+    ALWAYS_INLINE bool loopsEmpty() const;
+    ALWAYS_INLINE void maxTimeOnPacket( uint64_t& maxOnP );
+    ALWAYS_INLINE std::string detailedStr() const;
+    ALWAYS_INLINE std::string statistics() const;
+    ALWAYS_INLINE std::string toStr( const std::string& name ) const;
+
+private:
+    static_assert( valRange < sizeof( uint64_t ) * 8, " " );
+    static_assert( sizeOfStruct, "zero size" );
+    uint64_t maxLoopTime_[sizeOfStruct];
+    uint64_t loopTimes_[valRange + 1];
+};
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::cLoopStatCounter()
+{
+    memset( this, 0, sizeof( cLoopStatCounter<sizeOfStruct, minPowValue, valRange> ) );
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE void cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::operator+=(
+    const cLoopStatCounter<sizeOfStruct, minPowValue, valRange>& l )
+{
+    for( uint i = 0; i < sizeOfStruct; ++i )
+    {
+        maxLoopTime_[i] += l.maxLoopTime_[i];
+    }
+    for( uint i = 0; i <= valRange; ++i )
+    {
+        loopTimes_[i] += l.loopTimes_[i];
+    }
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE void cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::operator-=(
+    const cLoopStatCounter<sizeOfStruct, minPowValue, valRange>& l )
+{
+    for( uint i = 0; i < sizeOfStruct; ++i )
+    {
+        maxLoopTime_[i] -= l.maxLoopTime_[i];
+    }
+    for( uint i = 0; i <= valRange; ++i )
+    {
+        loopTimes_[i] -= l.loopTimes_[i];
+    }
+}
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE void cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::nextSnap( uint32_t sz, uint64_t time )
+{
+    THROW_ASSERT(
+        sz < sizeOfStruct, "size too much sz:" + std::to_string( sz ) + " def:" + std::to_string( sizeOfStruct ) );
+    if( unlikely( maxLoopTime_[sz] < time ) )
+    {
+        maxLoopTime_[sz] = time;
+    }
+    int index = 64 - minPowValue - __builtin_clzll( time );
+    if( unlikely( index > valRange ) )
+    {
+        loopTimes_[valRange]++;
+    }
+    else if( unlikely( index <= 0 ) )
+    {
+        loopTimes_[0]++;
+    }
+    else
+    {
+        loopTimes_[index]++;
+    }
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE void cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::singleSnap( uint64_t time )
+{
+    TA_LOGIC_ERROR( sizeOfStruct == 1 );
+    nextSnap( 0, time );
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE bool cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::loopsEmpty() const
+{
+    for( uint i = 0; i < sizeOfStruct; ++i )
+    {
+        if( maxLoopTime_[i] )
+        {
+            return false;
+        }
+    }
+    for( int i = 0; i <= valRange; ++i )
+    {
+        if( loopTimes_[i] )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE void cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::maxTimeOnPacket( uint64_t& maxOnP )
+{
+    for( uint32_t i = 1; i < sizeOfStruct; ++i )
+    {
+        uint64_t v = maxLoopTime_[i] / i;
+        if( maxOnP < v )
+        {
+            maxOnP = v;
+        }
+    }
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE std::string cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::detailedStr() const
+{
+    if( loopsEmpty() )
+    {
+        return std::string();
+    }
+    std::stringstream ss;
+    uint64_t maxTime = 0;
+    for( uint32_t i = 0; i < sizeOfStruct; ++i )
+    {
+        if( maxLoopTime_[i] )
+        {
+            if( maxLoopTime_[i] > maxTime )
+            {
+                maxTime = maxLoopTime_[i];
+            }
+            ss << "pkts:" << std::setw( 5 ) << i << " maxTime:" << std::setw( 10 ) << maxLoopTime_[i] << std::endl;
+        }
+    }
+    ss << "totalMax:" << maxTime << std::endl;
+    ss << statistics();
+    return ss.str();
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE std::string cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::statistics() const
+
+{
+    std::stringstream ss;
+    uint64_t cnt = 1;
+    cnt <<= minPowValue;
+    uint64_t currentPow = valRange;
+    while( loopTimes_[currentPow] == 0 )
+    {
+        if( !currentPow )
+        {
+            break;
+        }
+        currentPow--;
+    }
+    ss << "val from " << std::setw( 10 ) << 1 << " to " << std::setw( 10 ) << cnt << " : " << loopTimes_[0]
+       << std::endl;
+    for( uint i = 1; i <= currentPow; ++i )
+    {
+        cnt <<= 1;
+        if( loopTimes_[i] )
+        {
+            ss << "val from " << std::setw( 10 ) << ( ( cnt >> 1 ) + 1 ) << " to " << std::setw( 10 ) << cnt << " : "
+               << loopTimes_[i] << std::endl;
+        }
+    }
+    return ss.str();
+}
+
+template <uint32_t sizeOfStruct, uint32_t minPowValue, uint16_t valRange>
+ALWAYS_INLINE std::string cLoopStatCounter<sizeOfStruct, minPowValue, valRange>::toStr( const std::string& name ) const
+{
+    if( loopsEmpty() )
+    {
+        return std::string();
+    }
+    std::stringstream ss;
+    uint64_t maxTime = 0;
+    uint32_t onPkts = 0;
+    for( uint32_t i = 0; i < sizeOfStruct; ++i )
+    {
+        if( maxLoopTime_[i] > maxTime )
+        {
+            maxTime = maxLoopTime_[i];
+            onPkts = i;
+        }
+    }
+    ss << name << " maxTime:" << maxTime << "  (" << onPkts << ")" << std::endl;
+    ss << statistics() << std::endl;
+    return ss.str();
+}
+
+using MemoryPoolCounter = cLoopStatCounter<1, 10, 30>;
 
 }
 
